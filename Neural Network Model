@@ -1,0 +1,96 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.optimizers import Adam
+
+# Load the dataset
+df = pd.read_csv('ceramic_glassware_dummy_data.csv')
+
+# One-hot encode the categorical features
+categorical_features = ['Crystal Lattice Shape', 'Additive Type']
+df = pd.get_dummies(df, columns=categorical_features)
+
+# Define the features and target variables
+X = df.drop(['Yield Stress (MPa)', 'Ultimate Stress Point'], axis=1)
+y_yield_stress = df['Yield Stress (MPa)']
+y_ultimate_stress_point = df['Ultimate Stress Point']
+
+# Normalize the features to range [0, 1]
+scaler = MinMaxScaler()
+X_normalized = scaler.fit_transform(X)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train_yield, y_test_yield = train_test_split(X_normalized, y_yield_stress, test_size=0.3, random_state=42)
+X_train, X_test, y_train_ultimate, y_test_ultimate = train_test_split(X_normalized, y_ultimate_stress_point, test_size=0.3, random_state=42)
+
+# Define the neural network architecture for Yield Stress model
+model_yield_stress = Sequential([
+    Flatten(input_shape=(X.shape[1],)),
+    Dense(64, activation='relu'),
+    Dense(32, activation='relu'),
+    Dense(1)
+])
+
+# Compile the model for Yield Stress
+model_yield_stress.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error', metrics=['mae'])
+
+# Train the Yield Stress model
+model_yield_stress.fit(X_train, y_train_yield, epochs=4, batch_size=32, verbose=1)
+
+# Evaluate the Yield Stress model
+y_pred_yield = model_yield_stress.predict(X_test)
+mse_yield = mean_squared_error(y_test_yield, y_pred_yield)
+mae_yield = mean_absolute_error(y_test_yield, y_pred_yield)
+r2_yield = r2_score(y_test_yield, y_pred_yield)
+
+print(f"Yield Stress Model - MSE: {mse_yield}, MAE: {mae_yield}, R^2: {r2_yield}")
+
+# Define the neural network architecture for Ultimate Stress Point model
+model_ultimate_stress_point = Sequential([
+    Flatten(input_shape=(X.shape[1],)),
+    Dense(64, activation='relu'),
+    Dense(32, activation='relu'),
+    Dense(1)
+])
+
+# Compile the model for Ultimate Stress Point
+model_ultimate_stress_point.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error', metrics=['mae'])
+
+# Train the Ultimate Stress Point model
+model_ultimate_stress_point.fit(X_train, y_train_ultimate, epochs=4, batch_size=32, verbose=1)
+
+# Evaluate the Ultimate Stress Point model
+y_pred_ultimate = model_ultimate_stress_point.predict(X_test)
+mse_ultimate = mean_squared_error(y_test_ultimate, y_pred_ultimate)
+mae_ultimate = mean_absolute_error(y_test_ultimate, y_pred_ultimate)
+r2_ultimate = r2_score(y_test_ultimate, y_pred_ultimate)
+
+print(f"Ultimate Stress Point Model - MSE: {mse_ultimate}, MAE: {mae_ultimate}, R^2: {r2_ultimate}")
+
+
+
+//Results:
+>>Epoch 1/4
+219/219 [==============================] - 1s 2ms/step - loss: 53.0384 - mae: 5.6547
+Epoch 2/4
+219/219 [==============================] - 0s 2ms/step - loss: 5.5794 - mae: 1.8158
+Epoch 3/4
+219/219 [==============================] - 0s 2ms/step - loss: 0.0369 - mae: 0.1212
+Epoch 4/4
+219/219 [==============================] - 0s 2ms/step - loss: 0.0058 - mae: 0.0472
+94/94 [==============================] - 0s 1ms/step
+Yield Stress Model - MSE: 0.004893322967155126, MAE: 0.04390352426391418, R^2: 0.9997680855835092
+>>Epoch 1/4
+219/219 [==============================] - 1s 2ms/step - loss: 16242.6738 - mae: 105.4033
+Epoch 2/4
+219/219 [==============================] - 0s 2ms/step - loss: 2664.1445 - mae: 43.0384
+Epoch 3/4
+219/219 [==============================] - 0s 2ms/step - loss: 1649.9139 - mae: 33.7141
+Epoch 4/4
+219/219 [==============================] - 0s 2ms/step - loss: 636.7761 - mae: 20.0668
+94/94 [==============================] - 0s 2ms/step
+Ultimate Stress Point Model - MSE: 276.7853203726644, MAE: 12.722706265916806, R^2: 0.9271814119805676
