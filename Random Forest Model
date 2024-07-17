@@ -1,0 +1,49 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import OneHotEncoder
+
+# Load the dataset
+df = pd.read_csv('ceramic_glassware_dummy_data.csv')
+
+# One-hot encode the categorical features
+categorical_features = ['Crystal Lattice Shape', 'Additive Type']
+df = pd.get_dummies(df, columns=categorical_features)
+
+# Define the features and target variables
+X = df.drop(['Yield Stress (MPa)', 'Ultimate Stress Point'], axis=1)
+y_yield_stress = df['Yield Stress (MPa)']
+y_ultimate_stress_point = df['Ultimate Stress Point']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train_yield, y_test_yield = train_test_split(X, y_yield_stress, test_size=0.5, random_state=42)
+X_train, X_test, y_train_ultimate, y_test_ultimate = train_test_split(X, y_ultimate_stress_point, test_size=0.5, random_state=42)
+
+# Initialize the Random Forest models
+rf_yield_stress = RandomForestRegressor(n_estimators=100, random_state=42)
+rf_ultimate_stress_point = RandomForestRegressor(n_estimators=100, random_state=42)
+
+# Train the models
+rf_yield_stress.fit(X_train, y_train_yield)
+rf_ultimate_stress_point.fit(X_train, y_train_ultimate)
+
+# Make predictions
+y_pred_yield = rf_yield_stress.predict(X_test)
+y_pred_ultimate = rf_ultimate_stress_point.predict(X_test)
+
+# Evaluate the models
+mse_yield = mean_squared_error(y_test_yield, y_pred_yield)
+r2_yield = r2_score(y_test_yield, y_pred_yield)
+
+mse_ultimate = mean_squared_error(y_test_ultimate, y_pred_ultimate)
+r2_ultimate = r2_score(y_test_ultimate, y_pred_ultimate)
+
+# Print evaluation metrics
+print(f"Yield Stress Model - MSE: {mse_yield}, R^2: {r2_yield}")
+print(f"Ultimate Stress Point Model - MSE: {mse_ultimate}, R^2: {r2_ultimate}")
+
+//results:
+>>Yield Stress Model - MSE: 1.9249584494046806e-05, R^2: 0.9999990818539893
+>>Ultimate Stress Point Model - MSE: 0.20864683045925767, R^2: 0.999945392991582
