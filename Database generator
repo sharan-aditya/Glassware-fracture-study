@@ -1,0 +1,92 @@
+import numpy as np
+import pandas as pd
+
+# Set the number of samples
+num_samples = 10000
+
+# Constants
+k = 70  # Young's modulus in GPa (for simplicity, let's assume a constant value)
+
+# Generate features
+np.random.seed(42)
+
+# Crystal Lattice Energy (y) in kJ/mol
+crystal_lattice_energy = np.random.uniform(50, 200, num_samples)
+
+# Initial Fracture Point (a) in MPa
+initial_fracture_point = np.random.uniform(1, 10, num_samples)
+
+# Shock Dispersion (d)
+shock_dispersion = np.random.uniform(0.1, 2, num_samples)
+
+# Additive Type and Concentration
+additive_types = ["anionic", "cationic", "neutral"]
+additive_type = np.random.choice(additive_types, num_samples)
+additive_concentration = np.random.uniform(0, 15, num_samples)
+
+# Annealing Temperature in °C
+annealing_temperature = np.random.uniform(500, 1000, num_samples)
+
+# Cooling Rate in °C/min
+cooling_rate = np.random.uniform(0.1, 10, num_samples)
+
+# Crystal Lattice Shape
+lattice_shapes = ["cubic", "tetragonal", "hexagonal", "orthorhombic", "monoclinic", "triclinic"]
+crystal_lattice_shape = np.random.choice(lattice_shapes, num_samples)
+
+# Adjust Crystal Lattice Energy based on Additive Type and Concentration
+for i in range(num_samples):
+    if additive_type[i] == "anionic":
+        crystal_lattice_energy[i] *= (1 - 0.01 * additive_concentration[i])  # Decrease due to covalent bonds
+        crystal_lattice_energy[i] *= (1 + 0.005 * additive_concentration[i])  # Increase due to Van der Waals forces
+    elif additive_type[i] == "cationic":
+        crystal_lattice_energy[i] *= (1 + 0.02 * additive_concentration[i])  # Increase due to ionic bonds
+        crystal_lattice_energy[i] *= (1 - 0.005 * additive_concentration[i])  # Decrease due to Van der Waals forces
+    elif additive_type[i] == "neutral":
+        crystal_lattice_energy[i] *= (1 + 0.01 * additive_concentration[i])  # Increase due to increased density
+
+# Adjust Crystal Lattice Energy based on Annealing Temperature and Cooling Rate
+crystal_lattice_energy *= (1 + 0.001 * (annealing_temperature - 500) / 500)  # Increase with higher annealing temp
+crystal_lattice_energy *= (1 + 0.001 * (cooling_rate - 0.1) / 10)  # Increase with longer cooling rate
+
+# Density based on Additive Type and Concentration
+density = np.zeros(num_samples)
+for i in range(num_samples):
+    if additive_type[i] == "anionic":
+        density[i] = 2.5 + 0.05 * additive_concentration[i]  # Adjust based on anionic additive concentration
+    elif additive_type[i] == "cationic":
+        density[i] = 3.0 + 0.03 * additive_concentration[i]  # Adjust based on cationic additive concentration
+    elif additive_type[i] == "neutral":
+        density[i] = 2.7 + 0.04 * additive_concentration[i]  # Adjust based on neutral additive concentration
+
+# Yield Stress (S) directly proportional to Crystal Lattice Energy
+yield_stress = 0.1 * crystal_lattice_energy
+
+# Ultimate Stress Point proportional to Crystal Lattice Energy and Shape
+shape_factors = {"cubic": 1.0, "tetragonal": 1.1, "hexagonal": 1.2, "orthorhombic": 1.3, "monoclinic": 1.4, "triclinic": 1.5}
+ultimate_stress_point = np.zeros(num_samples)
+for i in range(num_samples):
+    ultimate_stress_point[i] = crystal_lattice_energy[i] * shape_factors[crystal_lattice_shape[i]]
+
+# Create a DataFrame
+data = {
+    "Yield Stress (MPa)": yield_stress,
+    "Crystal Lattice Energy (kJ/mol)": crystal_lattice_energy,
+    "Crystal Lattice Shape": crystal_lattice_shape,
+    "Additive Type": additive_type,
+    "Additive Concentration (%)": additive_concentration,
+    "Annealing Temperature (°C)": annealing_temperature,
+    "Cooling Rate (°C/min)": cooling_rate,
+    "Initial Fracture Point (MPa)": initial_fracture_point,
+    "Shock Dispersion": shock_dispersion,
+    "Ultimate Stress Point": ultimate_stress_point,
+    "Density (g/cm³)": density
+}
+
+df = pd.DataFrame(data)
+
+# Show a sample of the generated data
+print(df.head())
+
+# Save to a CSV file
+df.to_csv('ceramic_glassware_dummy_data.csv', index=False)
