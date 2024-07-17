@@ -21,8 +21,8 @@ shock_dispersion = np.random.uniform(0.1, 2, num_samples)
 
 # Additive Type and Concentration
 additive_types = ["anionic", "cationic", "neutral"]
-additive_type = np.random.choice(additive_types, num_samples)
-additive_concentration = np.random.uniform(0, 15, num_samples)
+additive_concentration = np.random.uniform(0, 15, (num_samples, 3))
+additive_concentration = additive_concentration / additive_concentration.sum(axis=1, keepdims=True) * 15
 
 # Annealing Temperature in °C
 annealing_temperature = np.random.uniform(500, 1000, num_samples)
@@ -36,14 +36,15 @@ crystal_lattice_shape = np.random.choice(lattice_shapes, num_samples)
 
 # Adjust Crystal Lattice Energy based on Additive Type and Concentration
 for i in range(num_samples):
-    if additive_type[i] == "anionic":
-        crystal_lattice_energy[i] *= (1 - 0.01 * additive_concentration[i])  # Decrease due to covalent bonds
-        crystal_lattice_energy[i] *= (1 + 0.005 * additive_concentration[i])  # Increase due to Van der Waals forces
-    elif additive_type[i] == "cationic":
-        crystal_lattice_energy[i] *= (1 + 0.02 * additive_concentration[i])  # Increase due to ionic bonds
-        crystal_lattice_energy[i] *= (1 - 0.005 * additive_concentration[i])  # Decrease due to Van der Waals forces
-    elif additive_type[i] == "neutral":
-        crystal_lattice_energy[i] *= (1 + 0.01 * additive_concentration[i])  # Increase due to increased density
+    anionic_concentration = additive_concentration[i, 0]
+    cationic_concentration = additive_concentration[i, 1]
+    neutral_concentration = additive_concentration[i, 2]
+    
+    crystal_lattice_energy[i] *= (1 - 0.01 * anionic_concentration)  # Decrease due to covalent bonds
+    crystal_lattice_energy[i] *= (1 + 0.005 * anionic_concentration)  # Increase due to Van der Waals forces
+    crystal_lattice_energy[i] *= (1 + 0.02 * cationic_concentration)  # Increase due to ionic bonds
+    crystal_lattice_energy[i] *= (1 - 0.005 * cationic_concentration)  # Decrease due to Van der Waals forces
+    crystal_lattice_energy[i] *= (1 + 0.01 * neutral_concentration)  # Increase due to increased density
 
 # Adjust Crystal Lattice Energy based on Annealing Temperature and Cooling Rate
 crystal_lattice_energy *= (1 + 0.001 * (annealing_temperature - 500) / 500)  # Increase with higher annealing temp
@@ -52,12 +53,11 @@ crystal_lattice_energy *= (1 + 0.001 * (cooling_rate - 0.1) / 10)  # Increase wi
 # Density based on Additive Type and Concentration
 density = np.zeros(num_samples)
 for i in range(num_samples):
-    if additive_type[i] == "anionic":
-        density[i] = 2.5 + 0.05 * additive_concentration[i]  # Adjust based on anionic additive concentration
-    elif additive_type[i] == "cationic":
-        density[i] = 3.0 + 0.03 * additive_concentration[i]  # Adjust based on cationic additive concentration
-    elif additive_type[i] == "neutral":
-        density[i] = 2.7 + 0.04 * additive_concentration[i]  # Adjust based on neutral additive concentration
+    anionic_concentration = additive_concentration[i, 0]
+    cationic_concentration = additive_concentration[i, 1]
+    neutral_concentration = additive_concentration[i, 2]
+    
+    density[i] = 2.5 + 0.05 * anionic_concentration + 0.03 * cationic_concentration + 0.04 * neutral_concentration
 
 # Yield Stress (S) directly proportional to Crystal Lattice Energy
 yield_stress = 0.1 * crystal_lattice_energy
@@ -73,8 +73,9 @@ data = {
     "Yield Stress (MPa)": yield_stress,
     "Crystal Lattice Energy (kJ/mol)": crystal_lattice_energy,
     "Crystal Lattice Shape": crystal_lattice_shape,
-    "Additive Type": additive_type,
-    "Additive Concentration (%)": additive_concentration,
+    "Anionic Concentration (%)": additive_concentration[:, 0],
+    "Cationic Concentration (%)": additive_concentration[:, 1],
+    "Neutral Concentration (%)": additive_concentration[:, 2],
     "Annealing Temperature (°C)": annealing_temperature,
     "Cooling Rate (°C/min)": cooling_rate,
     "Initial Fracture Point (MPa)": initial_fracture_point,
