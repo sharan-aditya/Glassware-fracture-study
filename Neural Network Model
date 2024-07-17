@@ -11,7 +11,7 @@ from tensorflow.keras.optimizers import Adam
 df = pd.read_csv('ceramic_glassware_dummy_data.csv')
 
 # One-hot encode the categorical features
-categorical_features = ['Crystal Lattice Shape', 'Additive Type']
+categorical_features = ['Crystal Lattice Shape']
 df = pd.get_dummies(df, columns=categorical_features)
 
 # Define the features and target variables
@@ -24,8 +24,8 @@ scaler = MinMaxScaler()
 X_normalized = scaler.fit_transform(X)
 
 # Split the data into training and testing sets
-X_train, X_test, y_train_yield, y_test_yield = train_test_split(X_normalized, y_yield_stress, test_size=0.3, random_state=42)
-X_train, X_test, y_train_ultimate, y_test_ultimate = train_test_split(X_normalized, y_ultimate_stress_point, test_size=0.3, random_state=42)
+X_train, X_test, y_train_yield, y_test_yield = train_test_split(X_normalized, y_yield_stress, test_size=0.2, random_state=42)
+X_train, X_test, y_train_ultimate, y_test_ultimate = train_test_split(X_normalized, y_ultimate_stress_point, test_size=0.2, random_state=42)
 
 # Define the neural network architecture for Yield Stress model
 model_yield_stress = Sequential([
@@ -72,25 +72,24 @@ r2_ultimate = r2_score(y_test_ultimate, y_pred_ultimate)
 print(f"Ultimate Stress Point Model - MSE: {mse_ultimate}, MAE: {mae_ultimate}, R^2: {r2_ultimate}")
 
 
-
 //Results:
 >>Epoch 1/4
-219/219 [==============================] - 1s 2ms/step - loss: 53.0384 - mae: 5.6547
+250/250 [==============================] - 1s 2ms/step - loss: 56.7846 - mae: 5.7635
 Epoch 2/4
-219/219 [==============================] - 0s 2ms/step - loss: 5.5794 - mae: 1.8158
+250/250 [==============================] - 0s 2ms/step - loss: 2.3137 - mae: 1.0299
 Epoch 3/4
-219/219 [==============================] - 0s 2ms/step - loss: 0.0369 - mae: 0.1212
+250/250 [==============================] - 0s 1ms/step - loss: 0.0064 - mae: 0.0538
 Epoch 4/4
-219/219 [==============================] - 0s 2ms/step - loss: 0.0058 - mae: 0.0472
-94/94 [==============================] - 0s 1ms/step
-Yield Stress Model - MSE: 0.004893322967155126, MAE: 0.04390352426391418, R^2: 0.9997680855835092
+250/250 [==============================] - 0s 2ms/step - loss: 0.0033 - mae: 0.0385
+63/63 [==============================] - 0s 1ms/step
+Yield Stress Model - MSE: 0.0026674617030924327, MAE: 0.03421462986645477, R^2: 0.9998824746783728
 >>Epoch 1/4
-219/219 [==============================] - 1s 2ms/step - loss: 16242.6738 - mae: 105.4033
+250/250 [==============================] - 2s 3ms/step - loss: 17381.5547 - mae: 108.7452
 Epoch 2/4
-219/219 [==============================] - 0s 2ms/step - loss: 2664.1445 - mae: 43.0384
+250/250 [==============================] - 1s 3ms/step - loss: 2644.2234 - mae: 42.6021
 Epoch 3/4
-219/219 [==============================] - 0s 2ms/step - loss: 1649.9139 - mae: 33.7141
+250/250 [==============================] - 1s 3ms/step - loss: 1315.4558 - mae: 29.8408
 Epoch 4/4
-219/219 [==============================] - 0s 2ms/step - loss: 636.7761 - mae: 20.0668
-94/94 [==============================] - 0s 2ms/step
-Ultimate Stress Point Model - MSE: 276.7853203726644, MAE: 12.722706265916806, R^2: 0.9271814119805676
+250/250 [==============================] - 1s 3ms/step - loss: 372.1451 - mae: 14.8171
+63/63 [==============================] - 0s 3ms/step
+Ultimate Stress Point Model - MSE: 154.7474785115047, MAE: 9.236538804825283, R^2: 0.9639333067382265
